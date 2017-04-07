@@ -1,4 +1,4 @@
-Diffy - Easy Diffing With Ruby [![Build Status](https://secure.travis-ci.org/samg/diffy.png)](http://travis-ci.org/samg/diffy)
+Diffy - Easy Diffing With Ruby [![Build Status](https://travis-ci.org/samg/diffy.svg?branch=master)](https://travis-ci.org/samg/diffy)
 ============================
 
 Need diffs in your ruby app?  Diffy has you covered.  It provides a convenient
@@ -30,25 +30,29 @@ Installation
 
 ###on Windows:
 
-1.  ensure that you have a working `which` and `diff` on your machine and on
-    your search path.
+1.  Ensure that you have a working `diff` on your machine and in your search path.
 
-    There are two options:
+    There are several options:
 
-    1.  install unxutils <http://sourceforge.net/projects/unxutils>
+	1.  Install [Diff::LCS](https://github.com/halostatue/diff-lcs), which includes `ldiff`. [RSpec](https://www.relishapp.com/rspec/docs/gettingstarted)
+		depends on Diff::LCS so you may already have it installed.
+		
+	1.  If you're using [RubyInstaller](http://rubyinstaller.org), install the [devkit](http://rubyinstaller.org/add-ons/devkit).
+
+	1.  Install unxutils <http://sourceforge.net/projects/unxutils>
 
         note that these tools contain diff 2.7 which has a different handling
         of whitespace in the diff results. This makes Diffy spec tests
         yielding one fail on Windows.
 
-    2.  install these two individually from the gnuwin32 project
+    1.  Install these two individually from the gnuwin32 project
         <http://gnuwin32.sourceforge.net/>
 
         note that this delivers diff 2.8 which makes Diffy spec pass
         even on Windows.
 
 
-2.   install the gem by
+2.   Install the gem by
 
          gem install diffy
 
@@ -121,6 +125,81 @@ There's some pretty nice css provided in `Diffy::CSS`.
     .diff ins strong{font-weight:normal;background:#9f9;}
     .diff li.diff-comment { display: none; }
     .diff li.diff-block-info { background: none repeat scroll 0 0 gray; }
+
+
+There's also a colorblind-safe version of the pallete provided in `Diffy::CSS_COLORBLIND_1`.
+
+
+Side-by-side comparisons
+------------------------
+
+Side-by-side comparisons, or split views as called by some, are supported by
+using the `Diffy::SplitDiff` class.  This class takes a diff returned from
+`Diffy::Diff` and splits it in two parts (or two sides): left and right.  The
+left side represents deletions while the right side represents insertions.
+
+The class is used as follows:
+
+```
+Diffy::SplitDiff.new(string1, string2, options = {})
+```
+
+The optional options hash is passed along to the main `Diff::Diff` class, so
+all default options such as full diff output are supported.  The output format
+may be changed by passing the format with the options hash (see below), and all
+default formats are supported.
+
+Unlike `Diffy::Diff`, `Diffy::SplitDiff` does not use `#to_s` to output
+the resulting diff.  Instead, two self-explanatory methods are used to output
+the diff: `#left` and `#right`.  Using the earlier example, this is what they
+look like in action:
+
+```
+>> puts Diffy::SplitDiff.new(string1, string2).left
+-Hello how are you
+ I'm fine
+-That's great
+```
+
+```
+>> puts Diffy::SplitDiff.new(string1, string2).right
++Hello how are you?
+ I'm fine
++That's swell
+```
+
+### Changing the split view output format
+
+The output format may be changed by passing the format with the options hash:
+
+```
+Diffy::SplitDiff.new(string1, string2, :format => :html)
+```
+
+This will result in the following:
+
+```
+>> puts Diffy::SplitDiff.new(string1, string2, :format => :html).left
+<div class="diff">
+  <ul>
+    <li class="del"><del>Hello how are you</del></li>
+    <li class="unchanged"><span>I&#39;m fine</span></li>
+    <li class="del"><del>That&#39;s <strong>great</strong></del></li>
+  </ul>
+</div>
+```
+
+```
+>> puts Diffy::SplitDiff.new(string1, string2, :format => :html).right
+<div class="diff">
+  <ul>
+    <li class="ins"><ins>Hello how are you<strong>?</strong></ins></li>
+    <li class="unchanged"><span>I&#39;m fine</span></li>
+    <li class="ins"><ins>That&#39;s <strong>swell</strong></ins></li>
+  </ul>
+</div>
+```
+
 
 Other Diff Options
 ------------------
@@ -235,16 +314,6 @@ deletions, and unchanged in a diff.
 
 Use `#map`, `#inject`, or any of Enumerable's methods.  Go crazy.
 
-
-Ruby Version Compatibility
--------------------------
-
-Support for Ruby 1.8.6 was dropped beginning at version 2.0 in order to support
-the chainable enumerators available in 1.8.7 and 1.9.
-
-If you want to use Diffy and Ruby 1.8.6 then:
-
-    $ gem install diffy -v1.1.0
 
 Testing
 ------------

@@ -1,5 +1,6 @@
 module Diffy
   class HtmlFormatter
+
     def initialize(diff, options = {})
       @diff = diff
       @options = options
@@ -41,7 +42,7 @@ module Diffy
 
     def wrap_lines(lines)
       if lines.empty?
-        %'<div class="diff"/>'
+        %'<div class="diff"></div>'
       else
         %'<div class="diff">\n  <ul>\n#{lines.join("\n")}\n  </ul>\n</div>\n'
       end
@@ -71,7 +72,8 @@ module Diffy
           else
             line_diff = Diffy::Diff.new(
                                         split_characters(chunk1),
-                                        split_characters(chunk2)
+                                        split_characters(chunk2),
+                                        Diffy::Diff::ORIGINAL_DEFAULT_OPTIONS
                                         )
             hi1 = reconstruct_characters(line_diff, '-')
             hi2 = reconstruct_characters(line_diff, '+')
@@ -88,19 +90,22 @@ module Diffy
 
     def split_characters(chunk)
       chunk.gsub(/^./, '').each_line.map do |line|
-        (line.chomp.split('') + ['\n']).map{|chr| ERB::Util.h(chr) }
+        chars = line.sub(/([\r\n]$)/, '').split('')
+        # add escaped newlines
+        chars << '\n'
+        chars.map{|chr| ERB::Util.h(chr) }
       end.flatten.join("\n") + "\n"
     end
 
     def reconstruct_characters(line_diff, type)
-      enum = line_diff.each_chunk
+      enum = line_diff.each_chunk.to_a
       enum.each_with_index.map do |l, i|
         re = /(^|\\n)#{Regexp.escape(type)}/
         case l
         when re
           highlight(l)
         when /^ /
-          if i > 1 and enum.to_a[i+1] and l.each_line.to_a.size < 4
+          if i > 1 and enum[i+1] and l.each_line.to_a.size < 4
             highlight(l)
           else
             l.gsub(/^./, '').gsub("\n", '').

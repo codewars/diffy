@@ -1,6 +1,7 @@
-source :rubygems
+source 'https://rubygems.org'
 
-group :test, :development do
-  gem 'rspec', "~>2.0"
-  gem 'rake', '~>0.9.2'
+platforms :rbx do
+  gem 'rubysl', '~> 2.0'
 end
+
+gemspec
