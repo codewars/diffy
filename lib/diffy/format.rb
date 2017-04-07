@@ -33,5 +33,9 @@ module Diffy
     def html
       HtmlFormatter.new(self, options.merge(:highlight_words => true)).to_s
     end
+
+    def html_advanced
+      AdvancedHtmlFormatter.new(self, options.merge(:highlight_words => true)).to_s
+    end
   end
 end
