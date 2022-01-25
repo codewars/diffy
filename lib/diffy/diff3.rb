@@ -10,7 +10,7 @@ module Diffy
       # default options passed to new Diff objects
       def default_options
         @default_options ||= {
-            :diff3 => ['-m', '-L older', '-L mine', '-L yours'],
+            :diff3 => ['-m', '-L mine', '-L older', '-L yours'],
             :line_merge => true # tries to intelligently merge three way conflicts using line by line comparisons
         }
       end
@@ -40,15 +40,15 @@ module Diffy
       @string1, @string2, @string3 = ensure_line_breaks(string1, string2, string3)
     end
 
-    def older
+    def mine
       string1
     end
 
-    def yours
+    def older
       string2
     end
 
-    def mine
+    def yours
       string3
     end
 
@@ -56,7 +56,7 @@ module Diffy
       @diff3 ||= begin
         paths = case options[:source]
                   when 'strings'
-                    [tempfile(older), tempfile(yours), tempfile(mine)]
+                    [tempfile(mine), tempfile(older), tempfile(yours)]
                   when 'files'
                     [string1, string2, string3]
                 end
